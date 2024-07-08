@@ -12,13 +12,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.NRK"
         tools:targetApi="31">
-
+        <activity
+            android:name=".QuizQuestionsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:label="@string/title_activity_quiz_questions"/>
         <activity
             android:name=".MainActivity"
+            android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/NoActionBarTheme"
-            android:windowSoftInputMode="adjustResize"
-            android:exported="true">
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
