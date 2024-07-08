@@ -55,15 +55,19 @@
                 android:text="Please enter your name"
                 android:textColor="#7A8089"
                 android:textSize="16sp" />
+
             <EditText
-                android:id="@+id/editTextText"
+                android:id="@+id/et_Name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:inputType="text"
+                android:inputType="textCapWords"
                 android:hint="Name"
+                android:textColor="#363A43"
+                android:textColorHint="#7A8089"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
+
             <Button
                 android:id="@+id/btn_start"
                 android:layout_width="match_parent"
