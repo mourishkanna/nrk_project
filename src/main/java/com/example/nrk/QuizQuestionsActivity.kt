@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
@@ -22,6 +23,11 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var tvOptionThree: TextView
     private lateinit var tvOptionFour: TextView
     private lateinit var btnSubmit: TextView
+    private lateinit var tvTimer: TextView
+    private lateinit var countDownTimer: CountDownTimer
+    private val timerDuration: Long = 10000
+    private var isTimerRunning = false
+    private var isAnswerShown = false
 
     private var mCurrentPosition: Int = 1
     private var mQuestionsList: ArrayList<Question>? = null
@@ -44,9 +50,12 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
         tvOptionThree = findViewById(R.id.tv_option_three)
         tvOptionFour = findViewById(R.id.tv_option_four)
         btnSubmit = findViewById(R.id.btn_submit)
+        tvTimer = findViewById(R.id.tv_timer)
 
         mQuestionsList = Constants.getQuestions()
+
         setQuestion()
+
         tvOptionOne.setOnClickListener(this)
         tvOptionTwo.setOnClickListener(this)
         tvOptionThree.setOnClickListener(this)
@@ -58,56 +67,56 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
     override fun onClick(v: View?) {
         when (v?.id) {
             R.id.tv_option_one -> {
-                selectedOptionView(tvOptionOne, 1)
+                if (isTimerRunning) selectedOptionView(tvOptionOne, 1)
             }
-
             R.id.tv_option_two -> {
-                selectedOptionView(tvOptionTwo, 2)
+                if (isTimerRunning) selectedOptionView(tvOptionTwo, 2)
             }
-
             R.id.tv_option_three -> {
-                selectedOptionView(tvOptionThree, 3)
+                if (isTimerRunning) selectedOptionView(tvOptionThree, 3)
             }
-
             R.id.tv_option_four -> {
-                selectedOptionView(tvOptionFour, 4)
+                if (isTimerRunning) selectedOptionView(tvOptionFour, 4)
             }
-
             R.id.btn_submit -> {
-                if (mSelectedOptionPosition == 0) {
-                    mCurrentPosition++
-                    when {
-                        mCurrentPosition <= mQuestionsList!!.size -> {
-                            setQuestion()
-                        }
-                        else -> {
-                            val intent = Intent(this@QuizQuestionsActivity, ResultActivity::class.java)
-                            intent.putExtra(Constants.USER_NAME, mUserName)
-                            intent.putExtra(Constants.CORRECT_ANSWERS, mCorrectAnswers)
-                            intent.putExtra(Constants.TOTAL_QUESTIONS, mQuestionsList!!.size)
-                            startActivity(intent)
-                            finish()
+                if (isTimerRunning) {
+                    countDownTimer.cancel()
+                    isTimerRunning = false
 
+                    if (mSelectedOptionPosition == 0) {
+                        showCorrectAnswer()
+                    } else {
+                        val question = mQuestionsList?.get(mCurrentPosition - 1)
+                        if (question!!.correctAnswer != mSelectedOptionPosition) {
+                            answerView(mSelectedOptionPosition, R.drawable.wrong_option_border_bg)
+                        } else {
+                            mCorrectAnswers++
                         }
-                    }
-                }
-                else {
-                    val question = mQuestionsList?.get(mCurrentPosition - 1)
-                    if (question!!.correctAnswer != mSelectedOptionPosition) {
-                        answerView(mSelectedOptionPosition, R.drawable.wrong_option_border_bg)
-                    }
-                    else {
-                        mCorrectAnswers++
+
+                        answerView(question.correctAnswer, R.drawable.correct_option_border_bg)
                     }
 
-                    answerView(question.correctAnswer, R.drawable.correct_option_border_bg)
+                    isAnswerShown = true
+
                     if (mCurrentPosition == mQuestionsList!!.size) {
                         btnSubmit.text = "FINISH"
-                    }
-                    else {
-                        btnSubmit.text = "GO TO NEXT QUESTION"
+                    } else {
+                        btnSubmit.text = "NEXT QUESTION"
                     }
                     mSelectedOptionPosition = 0
+                } else {
+                    mCurrentPosition++
+                    if (mCurrentPosition <= mQuestionsList!!.size) {
+                        isAnswerShown = false
+                        setQuestion()
+                    } else {
+                        val intent = Intent(this@QuizQuestionsActivity, ResultActivity::class.java)
+                        intent.putExtra(Constants.USER_NAME, mUserName)
+                        intent.putExtra(Constants.CORRECT_ANSWERS, mCorrectAnswers)
+                        intent.putExtra(Constants.TOTAL_QUESTIONS, mQuestionsList!!.size)
+                        startActivity(intent)
+                        finish()
+                    }
                 }
             }
         }
@@ -115,24 +124,45 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun setQuestion() {
         val question = mQuestionsList!!.get(mCurrentPosition - 1)
+        startTimer()
 
         defaultOptionsView()
 
-        if (mCurrentPosition == mQuestionsList!!.size) {
-            btnSubmit.text = "FINISH"
-        } else {
+        if (!isAnswerShown) {
+            progressBar.progress = mCurrentPosition
+            tvProgress.text = "$mCurrentPosition/${progressBar.max}"
+            tvQuestion.text = question.question
+            ivImage.setImageResource(question.image)
+            tvOptionOne.text = question.optionOne
+            tvOptionTwo.text = question.optionTwo
+            tvOptionThree.text = question.optionThree
+            tvOptionFour.text = question.optionFour
+
             btnSubmit.text = "SUBMIT"
+        } else {
+            showCorrectAnswer()
         }
+    }
 
-        progressBar.progress = mCurrentPosition
+    private fun startTimer() {
+        isTimerRunning = true
+        countDownTimer = object : CountDownTimer(timerDuration, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                val secondsRemaining = millisUntilFinished / 1000
+                tvTimer.text = "Seconds left: $secondsRemaining"
+            }
 
-        tvProgress.text = "$mCurrentPosition" + "/" + progressBar.getMax()
-        tvQuestion.text = question.question
-        ivImage.setImageResource(question.image)
-        tvOptionOne.text = question.optionOne
-        tvOptionTwo.text = question.optionTwo
-        tvOptionThree.text = question.optionThree
-        tvOptionFour.text = question.optionFour
+            override fun onFinish() {
+                isTimerRunning = false
+                showCorrectAnswer()
+                isAnswerShown = true
+                if (mCurrentPosition == mQuestionsList!!.size) {
+                    btnSubmit.text = "FINISH"
+                } else {
+                    btnSubmit.text = "NEXT QUESTION"
+                }
+            }
+        }.start()
     }
 
     private fun defaultOptionsView() {
@@ -167,9 +197,7 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun answerView(answer: Int, drawableView: Int) {
-
         when (answer) {
-
             1 -> {
                 tvOptionOne.background = ContextCompat.getDrawable(
                     this@QuizQuestionsActivity,
@@ -195,5 +223,10 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
                 )
             }
         }
+    }
+
+    private fun showCorrectAnswer() {
+        val question = mQuestionsList!![mCurrentPosition - 1]
+        answerView(question.correctAnswer, R.drawable.correct_option_border_bg)
     }
 }

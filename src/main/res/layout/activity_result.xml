@@ -31,7 +31,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Hey, Congratulations!"
+        android:text="Congratulations!"
         android:textColor="@android:color/black"
         android:textSize="25sp"
         android:textStyle="bold"/>
