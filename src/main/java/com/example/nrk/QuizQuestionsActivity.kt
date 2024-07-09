@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 
@@ -19,6 +20,7 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var tvOptionTwo: TextView
     private lateinit var tvOptionThree: TextView
     private lateinit var tvOptionFour: TextView
+    private lateinit var btnSubmit: TextView
 
     private var mCurrentPosition: Int = 1
     private var mQuestionsList: ArrayList<Question>? = null
@@ -36,6 +38,7 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
         tvOptionTwo = findViewById(R.id.tv_option_two)
         tvOptionThree = findViewById(R.id.tv_option_three)
         tvOptionFour = findViewById(R.id.tv_option_four)
+        btnSubmit = findViewById(R.id.btn_submit)
 
         mQuestionsList = Constants.getQuestions()
         setQuestion()
@@ -43,6 +46,7 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
         tvOptionTwo.setOnClickListener(this)
         tvOptionThree.setOnClickListener(this)
         tvOptionFour.setOnClickListener(this)
+        btnSubmit.setOnClickListener(this)
 
     }
 
@@ -63,14 +67,52 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
             R.id.tv_option_four -> {
                 selectedOptionView(tvOptionFour, 4)
             }
+
+            R.id.btn_submit -> {
+                if (mSelectedOptionPosition == 0) {
+                    mCurrentPosition++
+                    when {
+                        mCurrentPosition <= mQuestionsList!!.size -> {
+                            setQuestion()
+                        }
+
+                        else -> {
+                            Toast.makeText(
+                                this@QuizQuestionsActivity,
+                                "You have successfully completed the quiz.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                } else {
+                    val question = mQuestionsList?.get(mCurrentPosition - 1)
+                    if (question!!.correctAnswer != mSelectedOptionPosition) {
+                        answerView(mSelectedOptionPosition, R.drawable.wrong_option_border_bg)
+                    }
+                    answerView(question.correctAnswer, R.drawable.correct_option_border_bg)
+                    if (mCurrentPosition == mQuestionsList!!.size) {
+                        btnSubmit.text = "FINISH"
+                    }
+                    else {
+                        btnSubmit.text = "GO TO NEXT QUESTION"
+                    }
+                    mSelectedOptionPosition = 0
+                }
+            }
         }
     }
-
 
     private fun setQuestion() {
         val question = mQuestionsList!!.get(mCurrentPosition - 1)
 
         defaultOptionsView()
+
+        if (mCurrentPosition == mQuestionsList!!.size) {
+            btnSubmit.text = "FINISH"
+        } else {
+            btnSubmit.text = "SUBMIT"
+        }
+
         progressBar.progress = mCurrentPosition
 
         tvProgress.text = "$mCurrentPosition" + "/" + progressBar.getMax()
@@ -111,5 +153,36 @@ class QuizQuestionsActivity : AppCompatActivity(), View.OnClickListener {
             this@QuizQuestionsActivity,
             R.drawable.selected_option_border_bg
         )
+    }
+
+    private fun answerView(answer: Int, drawableView: Int) {
+
+        when (answer) {
+
+            1 -> {
+                tvOptionOne.background = ContextCompat.getDrawable(
+                    this@QuizQuestionsActivity,
+                    drawableView
+                )
+            }
+            2 -> {
+                tvOptionTwo.background = ContextCompat.getDrawable(
+                    this@QuizQuestionsActivity,
+                    drawableView
+                )
+            }
+            3 -> {
+                tvOptionThree.background = ContextCompat.getDrawable(
+                    this@QuizQuestionsActivity,
+                    drawableView
+                )
+            }
+            4 -> {
+                tvOptionFour.background = ContextCompat.getDrawable(
+                    this@QuizQuestionsActivity,
+                    drawableView
+                )
+            }
+        }
     }
 }

@@ -13,10 +13,16 @@
         android:theme="@style/Theme.NRK"
         tools:targetApi="31">
         <activity
+            android:name=".ResultActivity"
+            android:exported="false"
+            android:label="@string/title_activity_result"
+            android:screenOrientation="portrait"
+            android:theme="@style/NoActionBarTheme" />
+        <activity
             android:name=".QuizQuestionsActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:label="@string/title_activity_quiz_questions"/>
+            android:label="@string/title_activity_quiz_questions"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
