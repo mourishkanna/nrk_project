@@ -1,47 +1,35 @@
 package com.example.nrk
 
+import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.nrk.ui.theme.NRKTheme
+import android.view.View
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 
-class ResultActivity : ComponentActivity() {
+class ResultActivity : AppCompatActivity() {
+    private lateinit var tvName: TextView
+    private lateinit var tvScore: TextView
+    private lateinit var btnFinish: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            NRKTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+        setContentView(R.layout.activity_result)
+
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
+
+        tvName = findViewById(R.id.tv_name)
+        tvScore = findViewById(R.id.tv_score)
+        btnFinish = findViewById(R.id.btn_finish)
+        val userName = intent.getStringExtra(Constants.USER_NAME)
+        tvName.text = userName
+
+        val totalQuestions = intent.getIntExtra(Constants.TOTAL_QUESTIONS, 0)
+        val correctAnswers = intent.getIntExtra(Constants.CORRECT_ANSWERS, 0)
+
+        tvScore.text = "Your Score is $correctAnswers out of $totalQuestions."
+
+        btnFinish.setOnClickListener {
+            startActivity(Intent(this@ResultActivity, MainActivity::class.java))
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    NRKTheme {
-        Greeting("Android")
     }
 }
