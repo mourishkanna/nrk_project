@@ -27,13 +27,10 @@ class MainActivity : AppCompatActivity() {
         val btn_start = findViewById<Button>(R.id.btn_start)
 
         btn_start.setOnClickListener {
-
             if (et_Name.text.toString().isEmpty()) {
-
                 Toast.makeText(this@MainActivity, "Please enter your name", Toast.LENGTH_SHORT)
                     .show()
             } else {
-
                 val intent = Intent(this@MainActivity, QuizQuestionsActivity::class.java)
                 startActivity(intent)
                 finish()
